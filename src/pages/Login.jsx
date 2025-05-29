@@ -4,14 +4,14 @@ import { useAuth } from '../context/AuthContext';
 import { loginRequest } from '../api/auth';
 
 export default function Login() {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const userData = await loginRequest(email, password);
+    const userData = await loginRequest({ username, password });
     login(userData);
     navigate('/profile');
   };
@@ -21,10 +21,10 @@ export default function Login() {
       <h2>Авторизация</h2>
       <form onSubmit={handleSubmit}>
         <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
+          type="text"
+          placeholder="Логин"
+          value={username}
+          onChange={e => setUsername(e.target.value)}
           required
         />
         <input
