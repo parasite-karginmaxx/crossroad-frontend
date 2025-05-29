@@ -1,0 +1,36 @@
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #fff;
+    padding: 10px 20px;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+  
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+    }
+  
+    nav a {
+      margin: 0 10px;
+      text-decoration: none;
+      color: #333;
+  
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  
+    .auth button {
+      margin-left: 10px;
+      padding: 5px 10px;
+      border: none;
+      background: #ccc;
+      cursor: pointer;
+  
+      &:hover {
+        background: #aaa;
+      }
+    }
+  }
+  
