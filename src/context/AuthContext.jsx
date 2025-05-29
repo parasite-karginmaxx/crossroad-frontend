@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { getProfile, logoutRequest } from '../api/auth';
+import { getProfile } from '../api/auth';
 
 const AuthContext = createContext();
 
@@ -7,17 +7,20 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
   const login = (data) => setUser(data);
-  const logout = async () => {
-    await logoutRequest();
-    setUser(null);
+  
+  const logout = () => {
+  localStorage.removeItem('token');
+  setUser(null);
   };
 
   useEffect(() => {
-    // Автозагрузка профиля при входе на сайт
+  const token = localStorage.getItem('token');
+  if (token) {
     getProfile().then(data => {
       if (data) setUser(data);
     });
-  }, []);
+  }
+}, []);
 
   return (
     <AuthContext.Provider value={{ user, login, logout }}>
