@@ -8,7 +8,7 @@ export default function Header() {
 
   return (
     <header className="header">
-      <div className="logo">HotelLux</div>
+      <div className="logo">Crossroads</div>
       <nav>
         <Link to="/">Главная</Link>
         <Link to="/rooms">Номера</Link>

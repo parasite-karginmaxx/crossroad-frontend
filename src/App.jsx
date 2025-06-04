@@ -9,6 +9,12 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
 import RoomDetails from './pages/RoomDetails';
+import AdminLogin from './admin/pages/AdminLogin';
+import AdminDashboard from './admin/pages/Dashboard';
+import AdminUsers from './admin/pages/Users';
+import AdminRooms from './admin/pages/Rooms';
+import AdminBookings from './admin/pages/Bookings';
+import AdminRoute from './admin/components/AdminRoute';
 import './styles/App.scss';
 
 function App() {
@@ -26,6 +32,11 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/rooms/:id" element={<RoomDetails />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+          <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
+          <Route path="/admin/rooms" element={<AdminRoute><AdminRooms /></AdminRoute>} />
+          <Route path="/admin/bookings" element={<AdminRoute><AdminBookings /></AdminRoute>} />
         </Routes>
       </main>
     </Router>
