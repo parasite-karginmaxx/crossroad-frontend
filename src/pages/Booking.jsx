@@ -6,19 +6,16 @@ const rooms = [
   {
     id: 1,
     title: 'Стандартный номер',
-    image: 'https://source.unsplash.com/800x400/?hotel-room,standard',
     price: 4200
   },
   {
     id: 2,
     title: 'Люкс с балконом',
-    image: 'https://source.unsplash.com/800x400/?luxury-hotel,room',
     price: 7600
   },
   {
     id: 3,
     title: 'Семейный номер',
-    image: 'https://source.unsplash.com/800x400/?family-room,interior',
     price: 9500
   }
 ];
@@ -49,7 +46,6 @@ export default function Booking() {
   return (
     <div className="page">
       <h2>Бронирование: {room.title}</h2>
-      <img src={room.image} alt={room.title} style={{ maxWidth: '100%', borderRadius: '8px' }} />
       <p><strong>Цена:</strong> {room.price} ₽ / ночь</p>
       <form onSubmit={handleSubmit} style={{ marginTop: '20px' }}>
         <div>
