@@ -1,30 +1,27 @@
 import api from './axios';
+import { jwtDecode } from 'jwt-decode';
 
 export const loginRequest = async ({ username, password }) => {
+  console.log('Logging in with:', { username, password });
   const res = await api.post('/api/auth/login', { username, password });
 
-  // 1. Сохраняем токен
-  const token = res.data.token;
-  localStorage.setItem('token', token);
+  const { accessToken, refreshToken } = res.data;
+  localStorage.setItem('accessToken', accessToken);
+  localStorage.setItem('refreshToken', refreshToken);
 
-  // 2. Получаем профиль
-  const profileRes = await api.get('/api/users/me');
-  return profileRes.data; // возвращаем данные пользователя
+  const decoded = jwtDecode(accessToken);
+  return {
+    username: decoded.sub,
+    role: decoded.role || decoded.auth || decoded.authorities?.[0],
+  };
 };
 
-export const registerRequest = async (email, password) => {
-  // Здесь будет POST /api/auth/register
-  return { email };
-};
-
-export const logoutRequest = async () => {
-  // Здесь будет POST /api/auth/logout
+export const registerRequest = async ({ username, email, password }) => {
+  const res = await api.post('/api/auth/register', { username, email, password });
+  return res.data;
 };
 
 export const getProfile = async () => {
   const res = await api.get('/api/users/me');
-  
   return res.data;
 };
-
-  

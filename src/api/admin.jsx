@@ -1,32 +1,35 @@
-import api from './axios';
+import axios from 'axios';
+import adminApi from './adminAxios';
 import { jwtDecode } from 'jwt-decode';
 
+const BASE_URL = 'https://crossroad-backend.onrender.com';
+
 export const adminRequest = async ({ username, password }) => {
-  const res = await api.post('/api/auth/admin/login', { username, password });
-  const token = res.data.token;
+  const res = await axios.post(`${BASE_URL}/api/auth/admin/login`, { username, password });
+  const token = res.data.accessToken;
+
+  if (!token) throw new Error('Admin login failed: no token received');
 
   localStorage.setItem('token', token);
 
   const decoded = jwtDecode(token);
-  const role = decoded.role || decoded.auth || decoded.authorities?.[0] || '';
-  const login = decoded.sub; // по JWT стандарту
-
   return {
+    username: decoded.sub,
+    role: decoded.role,
     token,
-    username: login,
-    role
   };
 };
 
 export const fetchAdminRooms = async () => {
-  const response = await api.get('/api/rooms/all');
+  const response = await adminApi.get('/api/rooms/all');
   return response.data;
 };
+
 export const deleteRoom = async (id) => {
-  await api.delete(`/api/rooms/delete/${id}`);
+  await adminApi.delete(`/api/rooms/delete/${id}`);
 };
 
 export const createRoom = async (roomData) => {
-  const res = await api.post('/api/rooms/add', roomData);
+  const res = await adminApi.post('/api/rooms/add', roomData);
   return res.data;
 };

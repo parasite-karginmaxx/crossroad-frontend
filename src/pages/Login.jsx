@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { loginRequest } from '../api/auth';
+import { getProfile } from '../api/auth';
+
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -10,11 +12,12 @@ export default function Login() {
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    const userData = await loginRequest({ username, password });
-    login(userData);
-    navigate('/profile');
-  };
+  e.preventDefault();
+  await loginRequest({ username, password });
+  const profile = await getProfile();
+  login(profile);
+  navigate('/profile');
+};
 
   return (
     <div className="page">

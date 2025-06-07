@@ -11,10 +11,11 @@ export default function Profile() {
   }
 
   return (
-    <div className="page">
-      <h2>Профиль</h2>
-      <p>Email: {user.email}</p>
-      <button onClick={() => { logout(); navigate('/'); }}>Выйти</button>
-    </div>
+  <div className="page">
+    <h2>Профиль</h2>
+    <p><strong>Логин:</strong> {user?.username}</p>
+    <p><strong>Email:</strong> {user?.email}</p>
+    {/* и так далее */}
+  </div>
   );
 }
