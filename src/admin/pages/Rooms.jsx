@@ -96,18 +96,18 @@ export default function Rooms() {
         <table border="1" cellPadding="8" cellSpacing="0" style={{ width: '100%' }}>
           <thead>
             <tr>
-              <th>ID</th>
               <th>Номер</th>
               <th>Цена</th>
+              <th>Описание</th>
               <th>Действия</th>
             </tr>
           </thead>
           <tbody>
             {rooms.map(room => (
               <tr key={room.id}>
-                <td>{room.id}</td>
                 <td>{room.number}</td>
                 <td>{room.pricePerNight}</td>
+                <td>{room.description}</td>
                 <td>
                   <button onClick={() => handleDelete(room.id)}>Удалить</button>
                 </td>
