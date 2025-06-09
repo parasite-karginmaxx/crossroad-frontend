@@ -1,10 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
+import {
+  Container, Typography, Button, TextField, Select, MenuItem,
+  Grid, Snackbar, Alert, Box, Divider
+} from '@mui/material';
 
 export default function Profile() {
   const { user, logout } = useAuth();
   const [bookings, setBookings] = useState([]);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+
   const [profile, setProfile] = useState({
     firstName: '', lastName: '', middleName: '', phone: '',
     gender: '', birthDate: '', passportNumber: '', address: '', citizenship: ''
@@ -16,22 +22,28 @@ export default function Profile() {
   useEffect(() => {
     api.get('/api/users/me')
       .then(res => res.data.profile && setProfile(res.data.profile))
-      .catch(err => console.error('Ошибка загрузки профиля:', err));
+      .catch(() => showSnackbar('Ошибка загрузки профиля', 'error'));
 
     api.get('/api/user/bookings/my')
       .then(res => setBookings(res.data))
-      .catch(err => console.error('Ошибка загрузки бронирований:', err));
+      .catch(() => showSnackbar('Ошибка загрузки бронирований', 'error'));
   }, []);
 
-  const handleProfileChange = e => setProfile({ ...profile, [e.target.name]: e.target.value });
+  const showSnackbar = (message, severity = 'success') => {
+    setSnackbar({ open: true, message, severity });
+  };
+
+  const handleProfileChange = e => {
+    setProfile({ ...profile, [e.target.name]: e.target.value });
+  };
 
   const handleProfileSubmit = async (e) => {
     e.preventDefault();
     try {
       await api.patch('/api/profile/update', profile);
-      alert('Профиль обновлён');
-    } catch (err) {
-      alert('Не удалось обновить профиль. Проверьте данные.');
+      showSnackbar('Профиль обновлён');
+    } catch {
+      showSnackbar('Не удалось обновить профиль', 'error');
     }
   };
 
@@ -40,23 +52,24 @@ export default function Profile() {
     try {
       await api.put(`/api/user/bookings/${id}/cancel`);
       setBookings(prev => prev.map(b => b.id === id ? { ...b, status: 'CANCELLED' } : b));
+      showSnackbar('Бронирование отменено');
     } catch {
-      alert('Не удалось отменить бронирование');
+      showSnackbar('Ошибка отмены', 'error');
     }
   };
 
   const handleEdit = async (id) => {
     try {
       await api.put(`/api/user/bookings/${id}/edit`, editDates);
-      alert('Бронирование изменено');
+      showSnackbar('Бронирование изменено');
       setEditBookingId(null);
       window.location.reload();
     } catch {
-      alert('Ошибка при изменении бронирования');
+      showSnackbar('Ошибка при изменении', 'error');
     }
   };
 
-  const getStatusText = status => {
+  const getStatusText = (status) => {
     switch (status) {
       case 'PENDING': return 'В обработке';
       case 'ACTIVE': return 'Активно';
@@ -67,67 +80,85 @@ export default function Profile() {
   };
 
   return (
-    <div className="page">
-      <h2>Профиль</h2>
-      <p><strong>Логин:</strong> {user?.username}</p>
-      <p><strong>Email:</strong> {user?.email}</p>
-      <button onClick={logout}>Выйти</button>
+    <Container sx={{ py: 4 }}>
+      <Typography variant="h4" gutterBottom>Профиль</Typography>
+      <Typography>Логин: {user?.username}</Typography>
+      <Typography>Email: {user?.email}</Typography>
+      <Button onClick={logout} variant="outlined" sx={{ mt: 1 }}>Выйти</Button>
 
-      <hr />
-      <h3>Настройка профиля</h3>
-      <form onSubmit={handleProfileSubmit} style={{ maxWidth: '500px' }}>
-  <input type="text" name="firstName" value={profile.firstName} onChange={handleProfileChange} placeholder="Имя" />
-  <input type="text" name="lastName" value={profile.lastName} onChange={handleProfileChange} placeholder="Фамилия" />
-  <input type="text" name="middleName" value={profile.middleName} onChange={handleProfileChange} placeholder="Отчество" />
-  <input type="text" name="phone" value={profile.phone} onChange={handleProfileChange} placeholder="Телефон" />
-  <select name="gender" value={profile.gender} onChange={handleProfileChange}>
-    <option value="">Пол</option>
-    <option value="Мужской">Мужской</option>
-    <option value="Женский">Женский</option>
-  </select>
-  <input type="date" name="birthDate" value={profile.birthDate} onChange={handleProfileChange} />
-  <input type="text" name="passportNumber" value={profile.passportNumber} onChange={handleProfileChange} placeholder="Паспорт" />
-  <input type="text" name="address" value={profile.address} onChange={handleProfileChange} placeholder="Адрес" />
-  <input type="text" name="citizenship" value={profile.citizenship} onChange={handleProfileChange} placeholder="Гражданство" />
-  <br />
-  <button type="submit">Сохранить</button>
-</form>
+      <Divider sx={{ my: 4 }} />
 
-
-      <hr />
-      <h3>Мои бронирования</h3>
-      {bookings.length === 0 ? (
-        <p>Бронирований пока нет.</p>
-      ) : (
-        <ul>
-          {bookings.map(b => (
-            <li key={b.id}>
-              <p><strong>Номер:</strong> {b.roomNumber || '—'}</p>
-              <p><strong>С:</strong> {b.checkIn} <strong>по:</strong> {b.checkOut}</p>
-              <p><strong>Статус:</strong> {getStatusText(b.status)}</p>
-              {b.status !== 'CANCELLED' && (
-                <>
-                  <button onClick={() => handleCancel(b.id)}>Отменить</button>
-                  {editBookingId === b.id ? (
-                    <>
-                      <input type="date" value={editDates.checkIn} onChange={(e) => setEditDates(d => ({ ...d, checkIn: e.target.value }))} />
-                      <input type="date" value={editDates.checkOut} onChange={(e) => setEditDates(d => ({ ...d, checkOut: e.target.value }))} />
-                      <button onClick={() => handleEdit(b.id)}>Сохранить</button>
-                      <button onClick={() => setEditBookingId(null)}>Отмена</button>
-                    </>
-                  ) : (
-                    <button onClick={() => {
-                      setEditBookingId(b.id);
-                      setEditDates({ checkIn: b.checkIn, checkOut: b.checkOut });
-                    }}>Изменить</button>
-                  )}
-                </>
-              )}
-              <hr />
-            </li>
+      <Typography variant="h5" gutterBottom>Редактирование профиля</Typography>
+      <Box component="form" onSubmit={handleProfileSubmit} sx={{ maxWidth: 600 }}>
+        <Grid container spacing={2}>
+          {['firstName', 'lastName', 'middleName', 'phone', 'passportNumber', 'address', 'citizenship'].map((field, i) => (
+            <Grid item xs={12} sm={field === 'address' ? 12 : 6} key={i}>
+              <TextField
+                fullWidth name={field}
+                label={field}
+                value={profile[field]}
+                onChange={handleProfileChange}
+              />
+            </Grid>
           ))}
-        </ul>
+          <Grid item xs={6}>
+            <Select fullWidth name="gender" value={profile.gender} onChange={handleProfileChange} displayEmpty>
+              <MenuItem value="">Пол</MenuItem>
+              <MenuItem value="Мужской">Мужской</MenuItem>
+              <MenuItem value="Женский">Женский</MenuItem>
+            </Select>
+          </Grid>
+          <Grid item xs={6}>
+            <TextField fullWidth type="date" name="birthDate" value={profile.birthDate} onChange={handleProfileChange} />
+          </Grid>
+        </Grid>
+        <Button type="submit" variant="contained" sx={{ mt: 3 }}>Сохранить</Button>
+      </Box>
+
+      <Divider sx={{ my: 4 }} />
+
+      <Typography variant="h5" gutterBottom>Мои бронирования</Typography>
+      {bookings.length === 0 ? (
+        <Typography>Бронирований пока нет.</Typography>
+      ) : (
+        bookings.map(b => (
+          <Box key={b.id} sx={{ mb: 3, p: 2, border: '1px solid #ccc', borderRadius: 2 }}>
+            <Typography><strong>Номер:</strong> {b.roomNumber || '—'}</Typography>
+            <Typography><strong>С:</strong> {b.checkIn} <strong>по:</strong> {b.checkOut}</Typography>
+            <Typography><strong>Статус:</strong> {getStatusText(b.status)}</Typography>
+
+            {b.status !== 'CANCELLED' && (
+              <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Button variant="outlined" onClick={() => handleCancel(b.id)}>Отменить</Button>
+
+                {editBookingId === b.id ? (
+                  <>
+                    <TextField type="date" value={editDates.checkIn} onChange={e => setEditDates(d => ({ ...d, checkIn: e.target.value }))} />
+                    <TextField type="date" value={editDates.checkOut} onChange={e => setEditDates(d => ({ ...d, checkOut: e.target.value }))} />
+                    <Button onClick={() => handleEdit(b.id)}>Сохранить</Button>
+                    <Button onClick={() => setEditBookingId(null)}>Отмена</Button>
+                  </>
+                ) : (
+                  <Button onClick={() => {
+                    setEditBookingId(b.id);
+                    setEditDates({ checkIn: b.checkIn, checkOut: b.checkOut });
+                  }}>Изменить</Button>
+                )}
+              </Box>
+            )}
+          </Box>
+        ))
       )}
-    </div>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+      >
+        <Alert severity={snackbar.severity} onClose={() => setSnackbar({ ...snackbar, open: false })}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+    </Container>
   );
 }

@@ -1,4 +1,15 @@
 import { useEffect, useState } from 'react';
+import {
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  CircularProgress
+} from '@mui/material';
 import AdminLayout from '../components/AdminLayout';
 import adminApi from '../../api/adminAxios';
 
@@ -15,33 +26,35 @@ export default function AdminUsers() {
 
   return (
     <AdminLayout>
-      <h2>Пользователи</h2>
+      <Typography variant="h5" gutterBottom>Пользователи</Typography>
 
       {loading ? (
-        <p>Загрузка...</p>
+        <CircularProgress />
       ) : users.length === 0 ? (
-        <p>Пользователи не найдены</p>
+        <Typography>Пользователи не найдены</Typography>
       ) : (
-        <table border="1" cellPadding="8" cellSpacing="0" style={{ width: '100%' }}>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Логин</th>
-              <th>Email</th>
-              <th>Роль</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map(user => (
-              <tr key={user.id}>
-                <td>{user.id}</td>
-                <td>{user.username}</td>
-                <td>{user.email}</td>
-                <td>{user.role?.role}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead sx={{ backgroundColor: '#f5f5f5' }}>
+              <TableRow>
+                <TableCell><strong>ID</strong></TableCell>
+                <TableCell><strong>Логин</strong></TableCell>
+                <TableCell><strong>Email</strong></TableCell>
+                <TableCell><strong>Роль</strong></TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {users.map(user => (
+                <TableRow key={user.id}>
+                  <TableCell>{user.id}</TableCell>
+                  <TableCell>{user.username}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>{user.role?.role}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       )}
     </AdminLayout>
   );

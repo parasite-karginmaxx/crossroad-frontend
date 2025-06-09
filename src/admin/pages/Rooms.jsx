@@ -1,9 +1,24 @@
 import { useEffect, useState } from 'react';
+import {
+  Typography,
+  TextField,
+  Button,
+  MenuItem,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Box,
+  CircularProgress
+} from '@mui/material';
 import AdminLayout from '../components/AdminLayout';
 import { fetchAdminRooms, deleteRoom, createRoom } from '../../api/admin';
-import api from '../../api/axios'; // используем тот же axios
+import api from '../../api/axios';
 
-export default function Rooms() {
+export default function AdminRooms() {
   const [rooms, setRooms] = useState([]);
   const [roomTypes, setRoomTypes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -53,68 +68,73 @@ export default function Rooms() {
 
   return (
     <AdminLayout>
-      <h2>Номера</h2>
+      <Typography variant="h5" gutterBottom>Номера</Typography>
 
-      <form onSubmit={handleCreate} style={{ marginBottom: '20px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-        <input
-          type="text"
-          placeholder="Номер комнаты"
+      {/* Форма добавления */}
+      <Box component="form" onSubmit={handleCreate} sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 4 }}>
+        <TextField
+          label="Номер"
           value={newRoom.number}
           onChange={e => setNewRoom({ ...newRoom, number: e.target.value })}
         />
-        <input
+        <TextField
+          label="Цена за ночь"
           type="number"
-          placeholder="Цена за ночь"
           value={newRoom.pricePerNight}
           onChange={e => setNewRoom({ ...newRoom, pricePerNight: e.target.value })}
         />
-        <input
-          type="text"
-          placeholder="Описание"
+        <TextField
+          label="Описание"
           value={newRoom.description}
           onChange={e => setNewRoom({ ...newRoom, description: e.target.value })}
         />
-        <select
+        <TextField
+          select
+          label="Тип номера"
           value={newRoom.typeId}
           onChange={e => setNewRoom({ ...newRoom, typeId: e.target.value })}
+          sx={{ minWidth: 200 }}
         >
-          <option value="">Выберите тип номера</option>
+          <MenuItem value="">Выберите тип</MenuItem>
           {roomTypes.map(type => (
-            <option key={type.id} value={type.id}>
+            <MenuItem key={type.id} value={type.id}>
               {type.name} — {type.description}
-            </option>
+            </MenuItem>
           ))}
-        </select>
-        <button type="submit">Добавить номер</button>
-      </form>
+        </TextField>
+        <Button type="submit" variant="contained">Добавить</Button>
+      </Box>
 
+      {/* Таблица номеров */}
       {loading ? (
-        <p>Загрузка...</p>
+        <CircularProgress />
       ) : rooms.length === 0 ? (
-        <p>Номеров пока нет</p>
+        <Typography>Номеров пока нет</Typography>
       ) : (
-        <table border="1" cellPadding="8" cellSpacing="0" style={{ width: '100%' }}>
-          <thead>
-            <tr>
-              <th>Номер</th>
-              <th>Цена</th>
-              <th>Описание</th>
-              <th>Действия</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rooms.map(room => (
-              <tr key={room.id}>
-                <td>{room.number}</td>
-                <td>{room.pricePerNight}</td>
-                <td>{room.description}</td>
-                <td>
-                  <button onClick={() => handleDelete(room.id)}>Удалить</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead sx={{ backgroundColor: '#f5f5f5' }}>
+              <TableRow>
+                <TableCell><strong>Номер</strong></TableCell>
+                <TableCell><strong>Цена</strong></TableCell>
+                <TableCell><strong>Описание</strong></TableCell>
+                <TableCell><strong>Действия</strong></TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {rooms.map(room => (
+                <TableRow key={room.id}>
+                  <TableCell>{room.number}</TableCell>
+                  <TableCell>{room.pricePerNight}</TableCell>
+                  <TableCell>{room.description}</TableCell>
+                  <TableCell>
+                    <Button color="error" onClick={() => handleDelete(room.id)}>Удалить</Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       )}
     </AdminLayout>
   );
