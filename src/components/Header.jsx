@@ -1,33 +1,42 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { AppBar, Toolbar, Button, Box } from '@mui/material';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import '../styles/Header.scss';
+import logo from '../assets/images/logo.png';
 
 export default function Header() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   return (
-    <header className="header">
-      <div className="logo">Crossroads</div>
-      <nav>
-        <Link to="/">Главная</Link>
-        <Link to="/rooms">Номера</Link>
-        <Link to="/services">Услуги</Link>
-        <Link to="/contacts">Контакты</Link>
-      </nav>
-      <div className="auth">
-        {user ? (
-          <>
-            <button onClick={() => navigate('/profile')}>Профиль</button>
-            <button onClick={() => { logout(); navigate('/'); }}>Выход</button>
-          </>
-        ) : (
-          <>
-            <button onClick={() => navigate('/login')}>Авторизация</button>
-            <button onClick={() => navigate('/register')}>Регистрация</button>
-          </>
-        )}
-      </div>
-    </header>
+    <AppBar position="static" sx={{ backgroundColor: '#cdc9c6', color: '#000' }}>
+      <Toolbar sx={{ justifyContent: 'space-between', flexWrap: 'wrap',  px: { xs: 2, sm: 4 }, }} >
+        {/* Логотип */}
+        <Box component={RouterLink} to="/" sx={{ display: 'flex', alignItems: 'center', textDecoration: 'none', }} >
+          <Box component="img" src={logo} alt="Crossroads" sx={{ height: 60 }} />
+        </Box>
+        {/* Навигация */}
+        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', fontWeight: 'bold' }}>
+          <Button color="inherit" component={RouterLink} to="/">Главная</Button>
+          <Button color="inherit" component={RouterLink} to="/rooms">Номера</Button>
+          <Button color="inherit" component={RouterLink} to="/services">Услуги</Button>
+          <Button color="inherit" component={RouterLink} to="/contacts">Контакты</Button>
+        </Box>
+
+        {/* Авторизация */}
+        <Box sx={{ display: 'flex', gap: 1, fontWeight: 'bold' }}>
+          {user ? (
+            <>
+              <Button color="inherit" onClick={() => navigate('/profile')}>Профиль</Button>
+              <Button color="inherit" onClick={() => { logout(); navigate('/'); }}>Выход</Button>
+            </>
+          ) : (
+            <>
+              <Button color="inherit" onClick={() => navigate('/login')}>Войти</Button>
+              <Button color="inherit" onClick={() => navigate('/register')}>Регистрация</Button>
+            </>
+          )}
+        </Box>
+      </Toolbar>
+    </AppBar>
   );
 }

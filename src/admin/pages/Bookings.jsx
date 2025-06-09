@@ -1,4 +1,19 @@
 import { useEffect, useState } from 'react';
+import {
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Button,
+  CircularProgress,
+  Stack,
+  Snackbar,
+  Alert
+} from '@mui/material';
 import AdminLayout from '../components/AdminLayout';
 import adminApi from '../../api/adminAxios';
 
@@ -15,11 +30,16 @@ const statusLabels = {
 export default function AdminBookings() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
+
+  const showSnackbar = (message, severity = 'info') => {
+    setSnackbar({ open: true, message, severity });
+  };
 
   const fetchBookings = () => {
     adminApi.get('/api/admin/bookings/all')
       .then(res => setBookings(res.data))
-      .catch(err => console.error('Ошибка загрузки бронирований', err))
+      .catch(() => showSnackbar('Ошибка загрузки бронирований', 'error'))
       .finally(() => setLoading(false));
   };
 
@@ -33,9 +53,9 @@ export default function AdminBookings() {
         params: { status }
       });
       fetchBookings();
+      showSnackbar(`Статус обновлён: ${statusLabels[status]}`, 'success');
     } catch (err) {
-      console.error('Ошибка обновления статуса:', err);
-      alert('Не удалось изменить статус');
+      showSnackbar('Не удалось изменить статус', 'error');
     }
   };
 
@@ -44,62 +64,90 @@ export default function AdminBookings() {
     try {
       await adminApi.delete(`/api/admin/bookings/${id}/delete`);
       fetchBookings();
-    } catch (err) {
-      console.error('Ошибка удаления бронирования:', err);
-      alert('Не удалось удалить бронирование');
+      showSnackbar('Бронирование удалено', 'success');
+    } catch {
+      showSnackbar('Не удалось удалить бронирование', 'error');
     }
   };
 
   return (
     <AdminLayout>
-      <h2>Бронирования</h2>
+      <Typography variant="h5" gutterBottom>Бронирования</Typography>
 
       {loading ? (
-        <p>Загрузка...</p>
+        <CircularProgress />
       ) : bookings.length === 0 ? (
-        <p>Бронирований пока нет.</p>
+        <Typography>Бронирований пока нет.</Typography>
       ) : (
-        <table border="1" cellPadding="8" cellSpacing="0" style={{ width: '100%' }}>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Номер</th>
-              <th>Клиент</th>
-              <th>Дата заезда</th>
-              <th>Дата выезда</th>
-              <th>Статус</th>
-              <th>Действия</th>
-            </tr>
-          </thead>
-          <tbody>
-            {bookings.map(booking => (
-              <tr key={booking.id}>
-                <td>{booking.id}</td>
-                <td>{booking.roomNumber || '—'}</td>
-                <td>{booking.username || '—'}</td>
-                <td>{booking.checkIn}</td>
-                <td>{booking.checkOut}</td>
-                <td>{statusLabels[booking.status] || booking.status}</td>
-                <td>
-                  <button
-                    onClick={() => updateStatus(booking.id, 'CONFIRMED')}
-                    disabled={booking.status === 'CONFIRMED'}
-                  >
-                    Подтвердить
-                  </button>{' '}
-                  <button
-                    onClick={() => updateStatus(booking.id, 'REJECTED')}
-                    disabled={booking.status === 'REJECTED'}
-                  >
-                    Отклонить
-                  </button>{' '}
-                  <button onClick={() => deleteBooking(booking.id)}>Удалить</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead sx={{ backgroundColor: '#f5f5f5' }}>
+              <TableRow>
+                <TableCell><strong>ID</strong></TableCell>
+                <TableCell><strong>Номер</strong></TableCell>
+                <TableCell><strong>Клиент</strong></TableCell>
+                <TableCell><strong>Дата заезда</strong></TableCell>
+                <TableCell><strong>Дата выезда</strong></TableCell>
+                <TableCell><strong>Статус</strong></TableCell>
+                <TableCell><strong>Действия</strong></TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {bookings.map(booking => (
+                <TableRow key={booking.id}>
+                  <TableCell>{booking.id}</TableCell>
+                  <TableCell>{booking.roomNumber || '—'}</TableCell>
+                  <TableCell>{booking.username || '—'}</TableCell>
+                  <TableCell>{booking.checkIn}</TableCell>
+                  <TableCell>{booking.checkOut}</TableCell>
+                  <TableCell>{statusLabels[booking.status] || booking.status}</TableCell>
+                  <TableCell>
+                    <Stack direction="row" spacing={1}>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        color="success"
+                        onClick={() => updateStatus(booking.id, 'CONFIRMED')}
+                        disabled={booking.status === 'CONFIRMED'}
+                      >
+                        Подтвердить
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        color="warning"
+                        onClick={() => updateStatus(booking.id, 'REJECTED')}
+                        disabled={booking.status === 'REJECTED'}
+                      >
+                        Отклонить
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="error"
+                        onClick={() => deleteBooking(booking.id)}
+                      >
+                        Удалить
+                      </Button>
+                    </Stack>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       )}
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </AdminLayout>
   );
 }
