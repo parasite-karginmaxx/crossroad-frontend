@@ -1,25 +1,38 @@
 import { useParams, useNavigate } from 'react-router-dom';
-
-const rooms = [
-  { id: 1, title: 'Стандартный номер', description: 'Уютный номер с одной двуспальной кроватью и видом на сад. Идеально подходит для одиночных путешественников и пар.', price: 4200},
-  { id: 2, title: 'Люкс с балконом', description: 'Просторный номер с балконом, мини-баром и кондиционером. Отличный выбор для комфортного отдыха.', price: 7600},
-  { id: 3, title: 'Семейный номер', description: 'Две комнаты, кухня, идеален для семьи из 3-4 человек. Максимальный комфорт и пространство.', price: 9500}
-];
+import { useEffect, useState } from 'react';
+import api from '../api/axios';
+import { useAuth } from '../context/AuthContext';
 
 export default function RoomDetails() {
   const { id } = useParams();
+  const [room, setRoom] = useState(null);
   const navigate = useNavigate();
-  const room = rooms.find(r => r.id === parseInt(id));
+  const { user } = useAuth();
+
+  useEffect(() => {
+    api.get(`/api/rooms/${id}`)
+      .then(res => setRoom(res.data))
+      .catch(err => console.error('Ошибка загрузки номера:', err));
+  }, [id]);
+
+  const handleBooking = () => {
+    if (!user) {
+      alert('Для бронирования необходимо авторизоваться');
+      navigate('/login');
+    } else {
+      navigate(`/booking?rooms=${room.id}`);
+    }
+  };
 
   if (!room) return <p>Номер не найден</p>;
 
   return (
     <div className="page">
-      <h2>{room.title}</h2>
+      <h2>Номер: {room.number}</h2>
       <p>{room.description}</p>
-      <p><strong>Цена: {room.price} ₽ / ночь</strong></p>
+      <p><strong>Цена: {room.pricePerNight} ₽ / ночь</strong></p>
       <div style={{ display: 'flex', gap: '10px' }}>
-        <button onClick={() => navigate('/booking?room=' + room.id)}>Забронировать</button>
+        <button onClick={handleBooking}>Забронировать</button>
         <button onClick={() => navigate('/rooms')}>Назад</button>
       </div>
     </div>
