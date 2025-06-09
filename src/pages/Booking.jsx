@@ -1,66 +1,67 @@
-import { useSearchParams } from 'react-router-dom';
 import { useState } from 'react';
-import { createBooking } from '../api/bookings';
-
-const rooms = [
-  {
-    id: 1,
-    title: 'Стандартный номер',
-    price: 4200
-  },
-  {
-    id: 2,
-    title: 'Люкс с балконом',
-    price: 7600
-  },
-  {
-    id: 3,
-    title: 'Семейный номер',
-    price: 9500
-  }
-];
+import { useLocation, useNavigate } from 'react-router-dom';
+import { createBooking } from '../api/booking';
 
 export default function Booking() {
-  const [searchParams] = useSearchParams();
-  const roomId = parseInt(searchParams.get('room'));
-  const room = rooms.find(r => r.id === roomId);
+  const navigate = useNavigate();
+  const searchParams = new URLSearchParams(useLocation().search);
+  const roomId = searchParams.get('rooms');
 
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
-  const [notes, setNotes] = useState('');
-
-  if (!room) return <p>Номер не найден</p>;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const result = await createBooking({
-      roomId: room.id,
-      checkIn,
-      checkOut,
-      notes
-    });
-    alert('Бронирование отправлено!');
-    // возможно navigate('/profile') или reset формы
+
+    const today = new Date().toISOString().split('T')[0];
+
+    if (!checkIn || !checkOut || !roomId) {
+      return alert('Пожалуйста, заполните все поля');
+    }
+
+    if (checkIn < today || checkOut < today) {
+      return alert('Нельзя бронировать на прошедшие даты');
+    }
+
+    if (checkOut <= checkIn) {
+      return alert('Дата выезда должна быть позже даты заезда');
+    }
+
+    try {
+      await createBooking({ checkIn, checkOut, roomId });
+      alert('Бронирование успешно оформлено!');
+      navigate('/profile');
+    } catch (err) {
+      console.error('Ошибка бронирования:', err?.response?.data?.message || err);
+      alert('Не удалось оформить бронирование. Возможно, номер уже занят на выбранные даты или в вашем профиле не указана личная информация.');
+    }
   };
 
   return (
     <div className="page">
-      <h2>Бронирование: {room.title}</h2>
-      <p><strong>Цена:</strong> {room.price} ₽ / ночь</p>
-      <form onSubmit={handleSubmit} style={{ marginTop: '20px' }}>
-        <div>
-          <label>Дата заезда:</label><br />
-          <input type="date" value={checkIn} onChange={e => setCheckIn(e.target.value)} required />
-        </div>
-        <div>
-          <label>Дата отъезда:</label><br />
-          <input type="date" value={checkOut} onChange={e => setCheckOut(e.target.value)} required />
-        </div>
-        <div>
-          <label>Дополнительная информация:</label><br />
-          <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={4} />
-        </div>
-        <button type="submit" style={{ marginTop: '10px' }}>Подтвердить бронирование</button>
+      <h2>Бронирование номера</h2>
+      <form onSubmit={handleSubmit} style={{ maxWidth: '400px' }}>
+        <label>
+          Дата заезда:
+          <input
+            type="date"
+            value={checkIn}
+            onChange={(e) => setCheckIn(e.target.value)}
+            required
+          />
+        </label>
+        <br />
+        <label>
+          Дата выезда:
+          <input
+            type="date"
+            value={checkOut}
+            onChange={(e) => setCheckOut(e.target.value)}
+            required
+          />
+        </label>
+        <br />
+        <button type="submit">Забронировать</button>
       </form>
     </div>
   );
