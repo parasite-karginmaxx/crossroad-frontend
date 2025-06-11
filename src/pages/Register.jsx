@@ -12,23 +12,27 @@ export default function Register() {
   const [password, setPassword] = useState('');
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  const showSnackbar = (message) => {
+    setSnackbarMessage(message);
+    setSnackbarOpen(true);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       await registerRequest({ username, email, password });
-
       const loginData = await loginRequest({ username, password });
       const fullProfile = await getProfile();
 
-      login({ ...loginData, email: fullProfile.email });
+      login({ ...loginData, email: fullProfile.email, verified: fullProfile.verified });
       navigate('/profile');
     } catch (err) {
       console.error('Ошибка регистрации', err);
-      setSnackbarMessage('Ошибка регистрации');
-      setSnackbarOpen(true);
+      showSnackbar('Ошибка регистрации');
     }
   };
 
@@ -49,7 +53,6 @@ export default function Register() {
             required
             sx={{ mb: 2 }}
           />
-
           <TextField
             label="Email"
             type="email"
@@ -60,7 +63,6 @@ export default function Register() {
             required
             sx={{ mb: 2 }}
           />
-
           <TextField
             label="Пароль"
             type="password"
@@ -71,7 +73,6 @@ export default function Register() {
             required
             sx={{ mb: 3 }}
           />
-
           <Button
             type="submit"
             variant="outlined"

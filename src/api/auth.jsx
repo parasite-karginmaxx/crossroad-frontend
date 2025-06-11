@@ -25,3 +25,7 @@ export const getProfile = async () => {
   const res = await api.get('/api/users/me');
   return res.data;
 };
+export const verifyEmailCode = async ({ email, code }) => {
+  const res = await api.post('/api/auth/verify-code', { email, code });
+  return res.data;
+};
