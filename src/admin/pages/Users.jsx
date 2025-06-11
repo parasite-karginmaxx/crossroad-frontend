@@ -1,61 +1,106 @@
 import { useEffect, useState } from 'react';
-import {
-  Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  CircularProgress
-} from '@mui/material';
+import { Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Snackbar, Alert } from '@mui/material';
+import { fetchUsers, deleteUser, blockUser } from '../../api/admin';
 import AdminLayout from '../components/AdminLayout';
-import adminApi from '../../api/adminAxios';
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+
+  const loadUsers = () => {
+    fetchUsers().then(setUsers);
+  };
 
   useEffect(() => {
-    adminApi.get('/api/users/all')
-      .then(res => setUsers(res.data))
-      .catch(err => console.error('Ошибка загрузки пользователей', err))
-      .finally(() => setLoading(false));
+    loadUsers();
   }, []);
+
+  const handleDelete = async (id) => {
+    if (confirm('Удалить пользователя?')) {
+      await deleteUser(id);
+      setSnackbar({ open: true, message: 'Пользователь удалён', severity: 'info' });
+      loadUsers();
+    }
+  };
+
+  const handleBlock = async (id) => {
+    if (confirm('Заблокировать пользователя?')) {
+      await blockUser(id);
+      setSnackbar({ open: true, message: 'Пользователь заблокирован', severity: 'warning' });
+      loadUsers();
+    }
+  };
+
+  const translateRole = (role) => {
+    return role === 'ROLE_ADMIN' ? 'Админ' : 'Пользователь';
+  };
+
+  const translateStatus = (status) => {
+    if (!status || status === 'ACTIVE') return 'Активен';
+    if (status === 'BLOCKED') return 'Заблокирован';
+    if (status === 'PENDING') return 'Ожидает подтверждения';
+    return '—';
+  };
 
   return (
     <AdminLayout>
       <Typography variant="h5" gutterBottom>Пользователи</Typography>
 
-      {loading ? (
-        <CircularProgress />
-      ) : users.length === 0 ? (
-        <Typography>Пользователи не найдены</Typography>
-      ) : (
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead sx={{ backgroundColor: '#f5f5f5' }}>
-              <TableRow>
-                <TableCell><strong>ID</strong></TableCell>
-                <TableCell><strong>Логин</strong></TableCell>
-                <TableCell><strong>Email</strong></TableCell>
-                <TableCell><strong>Роль</strong></TableCell>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead sx={{ backgroundColor: '#f5f5f5' }}>
+            <TableRow>
+              <TableCell>ID</TableCell>
+              <TableCell>Логин</TableCell>
+              <TableCell>Email</TableCell>
+              <TableCell>Статус</TableCell>
+              <TableCell>Роль</TableCell>
+              <TableCell>Действия</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {users.map(user => (
+              <TableRow key={user.id}>
+                <TableCell>{user.id}</TableCell>
+                <TableCell>{user.username}</TableCell>
+                <TableCell>{user.email}</TableCell>
+                <TableCell>{translateStatus(user.status)}</TableCell>
+                <TableCell>{translateRole(user.role)}</TableCell>
+                <TableCell>
+                  <Button size="small" color="error" onClick={() => handleDelete(user.id)}>
+                    Удалить
+                  </Button>
+                  {(user.status === 'ACTIVE' || !user.status) && (
+                    <Button
+                      size="small"
+                      color="warning"
+                      onClick={() => handleBlock(user.id)}
+                      sx={{ ml: 1 }}
+                    >
+                      Заблокировать
+                    </Button>
+                  )}
+                </TableCell>
               </TableRow>
-            </TableHead>
-            <TableBody>
-              {users.map(user => (
-                <TableRow key={user.id}>
-                  <TableCell>{user.id}</TableCell>
-                  <TableCell>{user.username}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>{user.role?.role}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </AdminLayout>
   );
 }
