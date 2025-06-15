@@ -55,7 +55,7 @@ export default function Booking() {
       } else if (msg?.includes('Профиль отсутствует') || msg?.includes('обязателен')) {
         showSnackbar('Пожалуйста, заполните ваш профиль перед бронированием', 'error');
       } else if (typeof msg === 'string') {
-        showSnackbar(msg, 'error'); // 🟢 Показываем оригинальный текст из бэка
+        showSnackbar(msg, 'error');
       } else {
         showSnackbar('Произошла непредвиденная ошибка.', 'error');
       }
