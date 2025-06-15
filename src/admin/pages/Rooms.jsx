@@ -119,7 +119,6 @@ export default function AdminRooms() {
           </Table>
         </TableContainer>
       )}
-      {/* Dialog */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth maxWidth="sm">
         <DialogTitle>{editingId ? 'Редактирование номера' : 'Добавление номера'}</DialogTitle>
         <form onSubmit={handleSubmit}>

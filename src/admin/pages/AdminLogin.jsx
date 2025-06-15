@@ -3,24 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { adminRequest } from '../../api/admin';
 import { jwtDecode } from 'jwt-decode';
-import {
-  Container,
-  TextField,
-  Button,
-  Typography,
-  Box,
-  Snackbar,
-  Alert
-} from '@mui/material';
+import { Container, TextField, Button, Typography, Box, Snackbar, Alert } from '@mui/material';
 
 export default function AdminLogin() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
-
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'error' });
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -30,24 +20,17 @@ export default function AdminLogin() {
       if (extractedRole) {
         localStorage.setItem("role", extractedRole);
       }
-
       if (extractedRole !== 'ROLE_ADMIN') {
         setSnackbar({ open: true, message: 'У вас нет доступа к админ-панели', severity: 'error' });
         return;
       }
-
       login(userData);
       navigate('/admin/dashboard');
     } catch (err) {
       console.error('Login error', err);
-      setSnackbar({
-        open: true,
-        message: err.response?.data?.message || 'Ошибка входа',
-        severity: 'error'
-      });
+      setSnackbar({ open: true, message: err.response?.data?.message || 'Ошибка входа', severity: 'error' });
     }
   };
-
   return (
     <Container maxWidth="xs" sx={{ mt: 6 }}>
       <Typography variant="h5" align="center" gutterBottom>
@@ -76,7 +59,6 @@ export default function AdminLogin() {
           Войти
         </Button>
       </Box>
-
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}

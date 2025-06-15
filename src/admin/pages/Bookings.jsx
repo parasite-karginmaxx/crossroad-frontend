@@ -1,27 +1,10 @@
 import { useEffect, useState } from 'react';
 import {
-  Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Button,
-  CircularProgress,
-  Stack,
-  Snackbar,
-  Alert,
-  Box
-} from '@mui/material';
+  Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
+  Button, CircularProgress, Stack, Snackbar, Alert, Box } from '@mui/material';
 import AdminLayout from '../components/AdminLayout';
 import AdditionManager from './AdditionManager';
-import {
-  getAllBookings,
-  updateBookingStatus,
-  deleteBookingById
-} from '../../api/admin';
+import { getAllBookings, updateBookingStatus, deleteBookingById } from '../../api/admin';
 
 const statusLabels = {
   PENDING: 'В обработке',
@@ -32,7 +15,6 @@ const statusLabels = {
   COMPLETED: 'Завершено',
   EXTENSION_REQUESTED: 'Запрошено продление'
 };
-
 const isActionDisabled = (status, action) => {
   switch (status) {
     case 'PENDING':
@@ -50,28 +32,23 @@ const isActionDisabled = (status, action) => {
       return true;
   }
 };
-
 export default function AdminBookings() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
   const [openAdditionManager, setOpenAdditionManager] = useState(false);
-
   const showSnackbar = (message, severity = 'info') => {
     setSnackbar({ open: true, message, severity });
   };
-
   const fetchBookings = () => {
     getAllBookings()
       .then(setBookings)
       .catch(() => showSnackbar('Ошибка загрузки бронирований', 'error'))
       .finally(() => setLoading(false));
   };
-
   useEffect(() => {
     fetchBookings();
   }, []);
-
   const handleStatusUpdate = async (id, newStatus) => {
     try {
       await updateBookingStatus(id, newStatus);
@@ -81,7 +58,6 @@ export default function AdminBookings() {
       showSnackbar('Не удалось изменить статус', 'error');
     }
   };
-
   const handleDelete = async (id) => {
     if (!confirm('Вы уверены, что хотите удалить бронирование?')) return;
     try {
@@ -92,7 +68,6 @@ export default function AdminBookings() {
       showSnackbar('Не удалось удалить бронирование', 'error');
     }
   };
-
   return (
     <AdminLayout>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
@@ -101,7 +76,6 @@ export default function AdminBookings() {
           Управление услугами
         </Button>
       </Box>
-
       {loading ? (
         <CircularProgress />
       ) : bookings.length === 0 ? (
@@ -171,22 +145,11 @@ export default function AdminBookings() {
           </Table>
         </TableContainer>
       )}
-
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-          severity={snackbar.severity}
-          sx={{ width: '100%' }}
-        >
+      <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar({ ...snackbar, open: false })} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} >
+        <Alert  onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity} sx={{ width: '100%' }} >
           {snackbar.message}
         </Alert>
       </Snackbar>
-
       <AdditionManager open={openAdditionManager} onClose={() => setOpenAdditionManager(false)} />
     </AdminLayout>
   );

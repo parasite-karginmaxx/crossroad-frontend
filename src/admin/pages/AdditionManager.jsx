@@ -4,13 +4,7 @@ import {
   TextField, Button, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Paper, Snackbar, Alert
 } from '@mui/material';
-
-import {
-  getAllAdminAdditions,
-  addAdminAddition,
-  editAdminAddition,
-  deleteAdminAddition
-} from '../../api/admin';
+import { getAllAdminAdditions, addAdminAddition, editAdminAddition, deleteAdminAddition } from '../../api/admin';
 
 export default function AdditionManager({ open, onClose }) {
   const [additions, setAdditions] = useState([]);
@@ -18,24 +12,19 @@ export default function AdditionManager({ open, onClose }) {
   const [price, setPrice] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
-
   const showSnackbar = (message, severity = 'info') => {
     setSnackbar({ open: true, message, severity });
   };
-
   const fetchAdditions = () => {
     getAllAdminAdditions()
       .then(setAdditions)
       .catch(() => showSnackbar('Ошибка загрузки услуг', 'error'));
   };
-
   useEffect(() => {
     if (open) fetchAdditions();
   }, [open]);
-
   const handleSubmit = async () => {
     if (!name.trim() || !price.trim()) return showSnackbar('Введите название и цену', 'warning');
-
     try {
       if (editingId) {
         await editAdminAddition(editingId, { name, price });
@@ -52,13 +41,7 @@ export default function AdditionManager({ open, onClose }) {
       showSnackbar('Ошибка при сохранении услуги', 'error');
     }
   };
-
-  const handleEdit = (add) => {
-    setName(add.name);
-    setPrice(add.price);
-    setEditingId(add.id);
-  };
-
+  const handleEdit = (add) => { setName(add.name); setPrice(add.price); setEditingId(add.id); };
   const handleDelete = async (id) => {
     if (!confirm('Удалить услугу?')) return;
     try {
@@ -69,7 +52,6 @@ export default function AdditionManager({ open, onClose }) {
       showSnackbar('Ошибка при удалении', 'error');
     }
   };
-
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>Управление услугами</DialogTitle>
@@ -94,7 +76,6 @@ export default function AdditionManager({ open, onClose }) {
         <Button fullWidth variant="contained" sx={{ my: 2 }} onClick={handleSubmit}>
           {editingId ? 'СОХРАНИТЬ' : 'ДОБАВИТЬ'}
         </Button>
-
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
@@ -122,12 +103,7 @@ export default function AdditionManager({ open, onClose }) {
       <DialogActions>
         <Button onClick={onClose}>Закрыть</Button>
       </DialogActions>
-
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-      >
+      <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar({ ...snackbar, open: false })} >
         <Alert severity={snackbar.severity} onClose={() => setSnackbar({ ...snackbar, open: false })}>
           {snackbar.message}
         </Alert>

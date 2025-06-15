@@ -18,7 +18,7 @@ export default function Rooms() {
 
   const handleBooking = (roomId) => {
     if (!user) {
-      setOpenSnackbar(true); // показываем уведомление
+      setOpenSnackbar(true);
     } else {
       navigate(`/booking?rooms=${roomId}`);
     }
@@ -69,7 +69,6 @@ export default function Rooms() {
         ))}
       </Grid>
 
-      {/* Snackbar сообщение */}
       <Snackbar
         open={openSnackbar}
         autoHideDuration={4000}

@@ -56,8 +56,6 @@ export default function UserProfile() {
       <Button sx={{ mt: 2 }} variant="outlined" onClick={() => setEditOpen(true)}>
         Редактировать профиль
       </Button>
-
-      {/* Модалка */}
       <Dialog open={editOpen} onClose={() => setEditOpen(false)} fullWidth>
         <DialogTitle>Редактирование профиля</DialogTitle>
         <DialogContent>
